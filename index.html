@@ -526,73 +526,6 @@
             box-shadow: none;
         }
 
-        /* Progress Section */
-        .progress-section {
-            background: var(--card-bg);
-            border-radius: var(--radius);
-            border: 1px solid var(--border-color);
-            padding: 24px;
-            margin-bottom: 24px;
-        }
-
-        .progress-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .progress-title {
-            font-size: 1rem;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-
-        .progress-stats {
-            display: flex;
-            gap: 24px;
-        }
-
-        .stat-item {
-            text-align: center;
-        }
-
-        .stat-value {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--primary-color);
-        }
-
-        .stat-label {
-            font-size: 0.75rem;
-            color: var(--text-light);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        .progress-bar {
-            height: 8px;
-            background: var(--light-bg);
-            border-radius: 4px;
-            overflow: hidden;
-            margin-bottom: 12px;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--primary-color), var(--primary-dark));
-            width: 0%;
-            transition: width 0.3s ease;
-            border-radius: 4px;
-        }
-
-        .progress-text {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-        }
-
         /* Status Messages */
         .status-message {
             padding: 16px 20px;
@@ -962,30 +895,6 @@
                         </div>
                     </div>
                     
-                    <!-- Progress Section -->
-                    <div class="progress-section">
-                        <div class="progress-header">
-                            <div class="progress-title">Progress</div>
-                            <div class="progress-stats">
-                                <div class="stat-item">
-                                    <div class="stat-value" id="processedCount">0</div>
-                                    <div class="stat-label">Processed</div>
-                                </div>
-                                <div class="stat-item">
-                                    <div class="stat-value" id="totalCount">0</div>
-                                    <div class="stat-label">Total</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="progress-bar">
-                            <div class="progress-fill" id="progressFill"></div>
-                        </div>
-                        <div class="progress-text">
-                            <span>Starting</span>
-                            <span id="progressCounter">Image 0 of 0</span>
-                        </div>
-                    </div>
-                    
                     <!-- Status Message -->
                     <div id="statusMessage" class="status-message" style="display: none;"></div>
                 </div>
@@ -1176,18 +1085,6 @@
                     document.getElementById('loadingState').style.display = 'none';
                     document.getElementById('categorizationContent').style.display = 'none';
                     document.getElementById('noImagesState').style.display = 'block';
-                    
-                    // Update progress to show all images are already processed
-                    const totalCount = allImages.length;
-                    const processedCount = allImages.filter(img => img.hasStatus).length;
-                    
-                    document.getElementById('processedCount').textContent = processedCount;
-                    document.getElementById('totalCount').textContent = totalCount;
-                    document.getElementById('progressCounter').textContent = `All ${totalCount} images already processed`;
-                    
-                    const progressPercentage = totalCount > 0 ? 100 : 0;
-                    document.getElementById('progressFill').style.width = `${progressPercentage}%`;
-                    
                     return;
                 }
                 
@@ -1259,27 +1156,12 @@
             document.getElementById('reflectionCheckbox').checked = false;
             document.getElementById('exposureCheckbox').checked = false;
             
-            // Update progress
-            updateProgress();
-            
             // Hide status message
             document.getElementById('statusMessage').style.display = 'none';
             
             // Enable submit button
             document.getElementById('submitBtn').disabled = false;
             document.getElementById('submitBtn').textContent = 'Submit';
-        }
-
-        // Update progress bar and counter
-        function updateProgress() {
-            const processedCount = allImages.filter(img => img.processed).length;
-            const totalCount = allImages.length;
-            const progressPercentage = totalCount > 0 ? (processedCount / totalCount) * 100 : 0;
-            
-            document.getElementById('processedCount').textContent = processedCount;
-            document.getElementById('totalCount').textContent = totalCount;
-            document.getElementById('progressCounter').textContent = `Image ${currentImageIndex + 1} of ${totalCount}`;
-            document.getElementById('progressFill').style.width = `${progressPercentage}%`;
         }
 
         // Show completed state
