@@ -393,7 +393,7 @@
             background: white;
         }
 
-        /* Form Section */
+        /* Form Section - UPDATED LAYOUT */
         .form-section {
             background: var(--card-bg);
             border-radius: var(--radius);
@@ -402,65 +402,78 @@
             overflow: hidden;
         }
 
-        .form-grid {
+        .form-header-row {
             display: grid;
-            grid-template-columns: repeat(6, 1fr);
+            grid-template-columns: repeat(5, 1fr);
             gap: 1px;
             background: var(--border-color);
         }
 
-        .form-column {
+        .form-header-item {
+            background: var(--light-bg);
+            padding: 16px 20px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--text-primary);
+        }
+
+        .form-content-row {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 1px;
+            background: var(--border-color);
+            padding: 20px;
+        }
+
+        .form-content-item {
+            background: var(--card-bg);
+            padding: 12px;
+        }
+
+        .submit-row {
             background: var(--card-bg);
             padding: 24px;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
-
-        .form-column:nth-child(1),
-        .form-column:nth-child(2) {
-            grid-column: span 2;
-        }
-
-        .form-column:nth-child(3),
-        .form-column:nth-child(4),
-        .form-column:nth-child(5) {
-            grid-column: span 1;
-        }
-
-        .form-column:nth-child(6) {
-            grid-column: span 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .column-title {
-            font-size: 0.875rem;
-            font-weight: 600;
-            color: var(--text-primary);
             text-align: center;
-            margin-bottom: 8px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .form-select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            font-size: 0.95rem;
+            background: var(--card-bg);
+            color: var(--text-primary);
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .form-select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         }
 
         .checkbox-container {
             display: flex;
-            flex-direction: column;
+            justify-content: center;
             align-items: center;
-            gap: 12px;
+            height: 100%;
         }
 
         .checkbox-item {
             display: flex;
             align-items: center;
             gap: 12px;
-            padding: 12px 16px;
+            padding: 12px 20px;
             background: var(--light-bg);
             border-radius: var(--radius);
-            width: 100%;
-            max-width: 140px;
             transition: all 0.2s;
             cursor: pointer;
+            width: 140px;
+            margin: 0 auto;
         }
 
         .checkbox-item:hover {
@@ -485,14 +498,14 @@
         .submit-btn {
             background: var(--success-color);
             color: white;
-            padding: 14px 28px;
+            padding: 14px 48px;
             border-radius: var(--radius);
             font-weight: 600;
-            font-size: 0.95rem;
+            font-size: 1rem;
             border: none;
             cursor: pointer;
             transition: all 0.2s;
-            min-width: 140px;
+            min-width: 200px;
             box-shadow: var(--shadow);
         }
 
@@ -748,19 +761,13 @@
 
         /* Responsive Design */
         @media (max-width: 1200px) {
-            .form-grid {
+            .form-header-row,
+            .form-content-row {
                 grid-template-columns: repeat(3, 1fr);
             }
             
-            .form-column:nth-child(1),
-            .form-column:nth-child(2),
-            .form-column:nth-child(6) {
-                grid-column: span 1;
-            }
-            
-            .form-column:nth-child(3),
-            .form-column:nth-child(4),
-            .form-column:nth-child(5) {
+            .form-header-item:nth-child(4),
+            .form-header-item:nth-child(5) {
                 grid-column: span 1;
             }
         }
@@ -784,7 +791,8 @@
                 grid-template-columns: 1fr;
             }
             
-            .form-grid {
+            .form-header-row,
+            .form-content-row {
                 grid-template-columns: 1fr;
             }
             
@@ -904,12 +912,21 @@
                         </div>
                     </div>
                     
-                    <!-- Form Section -->
+                    <!-- Form Section - UPDATED LAYOUT -->
                     <div class="form-section">
-                        <div class="form-grid">
-                            <div class="form-column">
-                                <div class="column-title">New Image Category</div>
-                                <select id="imageCategory" required onchange="updateSubCategories()">
+                        <!-- Form Header Row -->
+                        <div class="form-header-row">
+                            <div class="form-header-item">New Image Category</div>
+                            <div class="form-header-item">New Sub Category</div>
+                            <div class="form-header-item">Haze</div>
+                            <div class="form-header-item">Reflection</div>
+                            <div class="form-header-item">Exposure</div>
+                        </div>
+                        
+                        <!-- Form Content Row -->
+                        <div class="form-content-row">
+                            <div class="form-content-item">
+                                <select id="imageCategory" class="form-select" required onchange="updateSubCategories()">
                                     <option value="">Select Category</option>
                                     <option value="Exterior">Exterior</option>
                                     <option value="Interior">Interior</option>
@@ -917,14 +934,12 @@
                                     <option value="Misc">Misc</option>
                                 </select>
                             </div>
-                            <div class="form-column">
-                                <div class="column-title">New Sub Category</div>
-                                <select id="subCategory" required>
+                            <div class="form-content-item">
+                                <select id="subCategory" class="form-select" required>
                                     <option value="">Select Sub-Category</option>
                                 </select>
                             </div>
-                            <div class="form-column">
-                                <div class="column-title">Haze</div>
+                            <div class="form-content-item">
                                 <div class="checkbox-container">
                                     <div class="checkbox-item">
                                         <input type="checkbox" id="hazeCheckbox">
@@ -932,8 +947,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="form-column">
-                                <div class="column-title">Reflection</div>
+                            <div class="form-content-item">
                                 <div class="checkbox-container">
                                     <div class="checkbox-item">
                                         <input type="checkbox" id="reflectionCheckbox">
@@ -941,8 +955,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="form-column">
-                                <div class="column-title">Exposure</div>
+                            <div class="form-content-item">
                                 <div class="checkbox-container">
                                     <div class="checkbox-item">
                                         <input type="checkbox" id="exposureCheckbox">
@@ -950,9 +963,11 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="form-column">
-                                <button onclick="submitCategorization()" class="submit-btn" id="submitBtn">Submit</button>
-                            </div>
+                        </div>
+                        
+                        <!-- Submit Button Row -->
+                        <div class="submit-row">
+                            <button onclick="submitCategorization()" class="submit-btn" id="submitBtn">Submit</button>
                         </div>
                     </div>
                     
