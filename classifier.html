@@ -901,7 +901,10 @@
             </div>
             
             <div class="content">
-               
+                <div class="content-header">
+                    <h1 class="content-title">Image Categorization</h1>
+                    <p class="content-subtitle" id="dateRangeDisplay">Review and categorize images from the source sheet</p>
+                </div>
                 
                 <div id="loadingState" class="loading-state">
                     <div class="loading-spinner"></div>
@@ -1029,7 +1032,7 @@
 
     <script>
         // Valid usernames
-        const VALID_USERNAMES = ["Nand Kishor", "Praveen Agarwal", "Raj Mani", "Mohit Kumar", "Navdeep Sisodia"];
+        const VALID_USERNAMES = ["Raj Mani", "Mohit Kumar", "Navdeep Sisodia", "Nand Kishor", "Praveen Agarwal"];
         
         // Category to Sub-Category mapping
         const CATEGORY_SUBCATEGORY_MAP = {
@@ -1288,8 +1291,9 @@
                 document.getElementById('currentUserDisplay').textContent = currentUser;
                 document.getElementById('userAvatar').textContent = getInitials(currentUser);
                 
-                // Update subtitle with date range
-                updateDateRangeDisplay();
+                // Set static subtitle (without date range)
+                document.getElementById('dateRangeDisplay').textContent = 
+                    'Review and categorize images from the source sheet';
                 
                 // Switch to main page
                 document.getElementById('loginPage').classList.remove('active');
@@ -1302,28 +1306,6 @@
                 loginError.style.display = 'block';
                 usernameSelect.focus();
             }
-        }
-        
-        // Update date range display in subtitle
-        function updateDateRangeDisplay() {
-            let dateRangeText = '';
-            
-            if (selectedFromDate || selectedToDate) {
-                dateRangeText = ' (Filtered by date';
-                if (selectedFromDate) {
-                    dateRangeText += ` from ${formatDateForDisplay(selectedFromDate)}`;
-                }
-                if (selectedToDate) {
-                    if (selectedFromDate) {
-                        dateRangeText += ' to';
-                    }
-                    dateRangeText += ` ${formatDateForDisplay(selectedToDate)}`;
-                }
-                dateRangeText += ')';
-            }
-            
-            document.getElementById('dateRangeDisplay').textContent = 
-                `Review and categorize images from the source sheet${dateRangeText}`;
         }
 
         // Logout function
