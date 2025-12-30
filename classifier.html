@@ -146,72 +146,6 @@
             font-size: 0.875rem;
         }
 
-        .form-row {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 12px;
-        }
-
-        .form-row .form-group {
-            flex: 1;
-            margin-bottom: 0;
-        }
-
-        .date-filter-section {
-            background: var(--light-bg);
-            padding: 16px;
-            border-radius: var(--radius);
-            margin-bottom: 20px;
-            border: 1px solid var(--border-color);
-        }
-
-        .date-filter-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-        }
-
-        .date-filter-title {
-            font-size: 0.95rem;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-
-        .clear-dates-btn {
-            background: none;
-            border: none;
-            color: var(--primary-color);
-            font-size: 0.75rem;
-            font-weight: 500;
-            cursor: pointer;
-            padding: 4px 8px;
-            border-radius: var(--radius-sm);
-            transition: all 0.2s;
-        }
-
-        .clear-dates-btn:hover {
-            background: rgba(37, 99, 235, 0.1);
-        }
-
-        .date-select {
-            width: 100%;
-            padding: 10px 12px;
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius);
-            font-size: 0.9rem;
-            background: var(--card-bg);
-            color: var(--text-primary);
-            transition: all 0.2s;
-            cursor: pointer;
-        }
-
-        .date-select:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-        }
-
         select {
             width: 100%;
             padding: 12px 16px;
@@ -273,13 +207,6 @@
             border-left: 4px solid var(--danger-color);
             font-size: 0.875rem;
             display: none;
-        }
-
-        .loading-dates {
-            text-align: center;
-            padding: 10px;
-            color: var(--text-light);
-            font-size: 0.85rem;
         }
 
         /* Main Page */
@@ -830,7 +757,7 @@
                 <div class="login-right">
                     <div class="login-box">
                         <h2>Welcome Back</h2>
-                        <p class="login-subtitle">Select your username and date range to begin categorizing images</p>
+                        <p class="login-subtitle">Select your username to begin categorizing your assigned images</p>
                         
                         <div class="form-group">
                             <label class="form-label">Username</label>
@@ -842,35 +769,6 @@
                                 <option value="Nand Kishor">Nand Kishor</option>
                                 <option value="Praveen Agarwal">Praveen Agarwal</option>
                             </select>
-                        </div>
-                        
-                        <div class="date-filter-section">
-                            <div class="date-filter-header">
-                                <span class="date-filter-title">Date Range Filter</span>
-                                <button type="button" onclick="clearDateFilters()" class="clear-dates-btn">Clear</button>
-                            </div>
-                            <div id="datesLoading" class="loading-dates">
-                                Loading available dates...
-                            </div>
-                            <div id="dateFilters" style="display: none;">
-                                <div class="form-row">
-                                    <div class="form-group">
-                                        <label class="form-label">From Date</label>
-                                        <select id="fromDate" class="date-select">
-                                            <option value="">All Dates</option>
-                                        </select>
-                                    </div>
-                                    <div class="form-group">
-                                        <label class="form-label">To Date</label>
-                                        <select id="toDate" class="date-select">
-                                            <option value="">All Dates</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div style="font-size: 0.75rem; color: var(--text-light); margin-top: 8px;">
-                                    Showing only dates that exist in your data. Select "All Dates" to show all.
-                                </div>
-                            </div>
                         </div>
                         
                         <button onclick="login()" class="btn btn-primary">Continue</button>
@@ -903,14 +801,14 @@
             <div class="content">
                 <div class="content-header">
                     <h1 class="content-title">Image Categorization</h1>
-                    <p class="content-subtitle" id="dateRangeDisplay">Review and categorize images from the source sheet</p>
+                    <p class="content-subtitle" id="dateRangeDisplay">Review and categorize your assigned images from the source sheet</p>
                 </div>
                 
                 <div id="loadingState" class="loading-state">
                     <div class="loading-spinner"></div>
                     <div class="loading-text">
-                        <div class="loading-title">Loading Images</div>
-                        <div class="loading-subtitle">Please wait while we load images from the source sheet</div>
+                        <div class="loading-title">Loading Your Assigned Images</div>
+                        <div class="loading-subtitle">Please wait while we load images assigned to you from the source sheet</div>
                     </div>
                 </div>
                 
@@ -997,8 +895,8 @@
                 <!-- Completed State -->
                 <div id="completedState" class="completed-state" style="display: none;">
                     <div class="completed-icon">✓</div>
-                    <h2 class="completed-title">All Images Processed!</h2>
-                    <p class="completed-subtitle">You have successfully categorized all available images. Great work!</p>
+                    <h2 class="completed-title">All Your Assigned Images Processed!</h2>
+                    <p class="completed-subtitle">You have successfully categorized all images assigned to you. Great work!</p>
                     <div class="action-buttons">
                         <button onclick="restartCategorization()" class="action-btn">
                             Start New Session
@@ -1013,7 +911,7 @@
                 <div id="noImagesState" class="completed-state" style="display: none;">
                     <div class="no-images-icon">📊</div>
                     <h2 class="completed-title">No Images Require Processing</h2>
-                    <p class="completed-subtitle" id="noImagesMessage">All images in the source sheet have already been processed or have a status assigned.</p>
+                    <p class="completed-subtitle" id="noImagesMessage">All images assigned to you have already been processed or no images are currently assigned to you.</p>
                     <div class="action-buttons">
                         <button onclick="restartCategorization()" class="action-btn">
                             Check Again
@@ -1046,243 +944,18 @@
         let pendingImages = [];
         let currentImageIndex = -1;
         let currentUser = '';
-        let selectedFromDate = null;
-        let selectedToDate = null;
-        let availableDates = [];
         
         // Get initials for avatar
         function getInitials(name) {
             return name.split(' ').map(n => n[0]).join('').toUpperCase();
         }
         
-        // Clear date filters
-        function clearDateFilters() {
-            document.getElementById('fromDate').value = '';
-            document.getElementById('toDate').value = '';
-        }
-        
-        // Parse date from format "23 Dec, 2025, 17:54"
-        function parseCustomDateFormat(dateString) {
-            if (!dateString) return null;
-            
-            // Remove quotes if present
-            dateString = dateString.replace(/['"]/g, '').trim();
-            
-            // Match pattern: "23 Dec, 2025, 17:54"
-            const pattern = /^(\d{1,2})\s+([A-Za-z]{3}),\s+(\d{4}),\s+(\d{1,2}):(\d{2})$/;
-            const match = dateString.match(pattern);
-            
-            if (match) {
-                const day = parseInt(match[1]);
-                const monthStr = match[2];
-                const year = parseInt(match[3]);
-                const hour = parseInt(match[4]);
-                const minute = parseInt(match[5]);
-                
-                // Month mapping
-                const monthMap = {
-                    'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3, 'May': 4, 'Jun': 5,
-                    'Jul': 6, 'Aug': 7, 'Sep': 8, 'Oct': 9, 'Nov': 10, 'Dec': 11
-                };
-                
-                const month = monthMap[monthStr];
-                if (month !== undefined) {
-                    return new Date(year, month, day, hour, minute);
-                }
-            }
-            
-            // Try other date formats as fallback
-            const date = new Date(dateString);
-            if (!isNaN(date.getTime())) {
-                return date;
-            }
-            
-            return null;
-        }
-        
-        // Extract date from datetime string
-        function extractDateFromDateTime(datetimeString) {
-            if (!datetimeString) return null;
-            
-            // First try the custom format
-            let date = parseCustomDateFormat(datetimeString);
-            if (date) {
-                return date;
-            }
-            
-            // Try other formats
-            datetimeString = datetimeString.replace(/['"]/g, '').trim();
-            
-            // Try common date patterns
-            const patterns = [
-                /\d{4}-\d{2}-\d{2}/,  // YYYY-MM-DD
-                /\d{2}-\d{2}-\d{4}/,  // DD-MM-YYYY
-                /\d{2}\/\d{2}\/\d{4}/, // DD/MM/YYYY
-                /\d{4}\/\d{2}\/\d{2}/  // YYYY/MM/DD
-            ];
-            
-            for (const pattern of patterns) {
-                const match = datetimeString.match(pattern);
-                if (match) {
-                    date = new Date(match[0]);
-                    if (!isNaN(date.getTime())) {
-                        return date;
-                    }
-                }
-            }
-            
-            // Try direct parsing
-            date = new Date(datetimeString);
-            if (!isNaN(date.getTime())) {
-                return date;
-            }
-            
-            return null;
-        }
-        
-        // Format date for display
-        function formatDateForDisplay(date) {
-            if (!date) return 'N/A';
-            return date.toLocaleDateString('en-US', { 
-                year: 'numeric', 
-                month: 'short', 
-                day: 'numeric' 
-            });
-        }
-        
-        // Format date for YYYY-MM-DD format
-        function formatDateYYYYMMDD(date) {
-            if (!date) return '';
-            const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const day = String(date.getDate()).padStart(2, '0');
-            return `${year}-${month}-${day}`;
-        }
-        
-        // Load available dates from the CSV
-        async function loadAvailableDates() {
-            const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSAPxmT0IcGf69X8ibSsbbkuOXSTLp14PEq_MWXBVtxjexkKSyENg0kCE3T0rMe1-xzjZVSo166TzIx/pub?gid=0&single=true&output=csv';
-            
-            try {
-                const response = await fetch(csvUrl);
-                const csvText = await response.text();
-                
-                // Parse CSV
-                const rows = csvText.split('\n');
-                const headers = rows[0].split(',').map(h => h.trim().replace(/['"]/g, ''));
-                
-                const dateSet = new Set();
-                
-                for (let i = 1; i < rows.length; i++) {
-                    if (rows[i].trim() === '') continue;
-                    
-                    // Handle CSV with quoted values that might contain commas
-                    const cells = [];
-                    let inQuotes = false;
-                    let currentCell = '';
-                    
-                    for (let char of rows[i]) {
-                        if (char === '"') {
-                            inQuotes = !inQuotes;
-                        } else if (char === ',' && !inQuotes) {
-                            cells.push(currentCell.trim());
-                            currentCell = '';
-                        } else {
-                            currentCell += char;
-                        }
-                    }
-                    cells.push(currentCell.trim());
-                    
-                    // Find the created_on column
-                    const createdOnIndex = headers.indexOf('created_on');
-                    if (createdOnIndex !== -1 && cells[createdOnIndex]) {
-                        const createdOn = cells[createdOnIndex].replace(/['"]/g, '');
-                        const date = extractDateFromDateTime(createdOn);
-                        
-                        if (date) {
-                            const dateString = formatDateYYYYMMDD(date);
-                            if (dateString) {
-                                dateSet.add(dateString);
-                            }
-                        }
-                    }
-                }
-                
-                // Convert to array and sort
-                availableDates = Array.from(dateSet).sort();
-                
-                // Populate date dropdowns
-                populateDateDropdowns();
-                
-                // Hide loading, show filters
-                document.getElementById('datesLoading').style.display = 'none';
-                document.getElementById('dateFilters').style.display = 'block';
-                
-                console.log('Available dates loaded:', availableDates);
-                
-            } catch (error) {
-                document.getElementById('datesLoading').innerHTML = 
-                    '<div style="color: var(--danger-color);">Error loading dates. Using all dates.</div>';
-                document.getElementById('dateFilters').style.display = 'block';
-                console.error('Error loading dates:', error);
-            }
-        }
-        
-        // Populate date dropdowns with available dates
-        function populateDateDropdowns() {
-            const fromDateSelect = document.getElementById('fromDate');
-            const toDateSelect = document.getElementById('toDate');
-            
-            // Clear existing options (keeping "All Dates")
-            while (fromDateSelect.options.length > 1) fromDateSelect.remove(1);
-            while (toDateSelect.options.length > 1) toDateSelect.remove(1);
-            
-            // Add available dates
-            availableDates.forEach(dateString => {
-                const date = new Date(dateString);
-                const displayText = formatDateForDisplay(date);
-                
-                // Add to From Date dropdown
-                const fromOption = document.createElement('option');
-                fromOption.value = dateString;
-                fromOption.textContent = displayText;
-                fromDateSelect.appendChild(fromOption);
-                
-                // Add to To Date dropdown
-                const toOption = document.createElement('option');
-                toOption.value = dateString;
-                toOption.textContent = displayText;
-                toDateSelect.appendChild(toOption);
-            });
-            
-            // Set defaults to first and last dates if available
-            if (availableDates.length > 0) {
-                fromDateSelect.value = availableDates[0];
-                toDateSelect.value = availableDates[availableDates.length - 1];
-            }
-        }
-        
         // Login function
         function login() {
             const usernameSelect = document.getElementById('username');
             const loginError = document.getElementById('loginError');
-            const fromDateSelect = document.getElementById('fromDate');
-            const toDateSelect = document.getElementById('toDate');
             
             const selectedUsername = usernameSelect.value.trim();
-            
-            // Get date values
-            const fromDateValue = fromDateSelect.value;
-            const toDateValue = toDateSelect.value;
-            
-            selectedFromDate = fromDateValue ? new Date(fromDateValue + 'T00:00:00') : null;
-            selectedToDate = toDateValue ? new Date(toDateValue + 'T23:59:59') : null;
-            
-            // Validate date range
-            if (selectedFromDate && selectedToDate && selectedFromDate > selectedToDate) {
-                alert('From date cannot be after To date');
-                return;
-            }
             
             if (VALID_USERNAMES.includes(selectedUsername)) {
                 // Login successful
@@ -1291,9 +964,9 @@
                 document.getElementById('currentUserDisplay').textContent = currentUser;
                 document.getElementById('userAvatar').textContent = getInitials(currentUser);
                 
-                // Set static subtitle (without date range)
+                // Set static subtitle
                 document.getElementById('dateRangeDisplay').textContent = 
-                    'Review and categorize images from the source sheet';
+                    'Review and categorize your assigned images from the source sheet';
                 
                 // Switch to main page
                 document.getElementById('loginPage').classList.remove('active');
@@ -1315,7 +988,6 @@
                 document.getElementById('mainPage').classList.remove('active');
                 document.getElementById('username').value = '';
                 document.getElementById('loginError').style.display = 'none';
-                clearDateFilters();
                 resetCategorizationState();
             }
         }
@@ -1325,8 +997,6 @@
             allImages = [];
             pendingImages = [];
             currentImageIndex = -1;
-            selectedFromDate = null;
-            selectedToDate = null;
         }
 
         // Restart categorization
@@ -1336,37 +1006,6 @@
             document.getElementById('categorizationContent').style.display = 'block';
             currentImageIndex = -1;
             startCategorization();
-        }
-
-        // Check if image date is within selected range
-        function isImageInDateRange(image) {
-            if (!selectedFromDate && !selectedToDate) {
-                return true; // No date filter applied
-            }
-            
-            const createdOn = image.created_on;
-            if (!createdOn) {
-                return false; // No date information, exclude from filtered results
-            }
-            
-            const imageDate = extractDateFromDateTime(createdOn);
-            if (!imageDate) {
-                return false; // Could not parse date, exclude from filtered results
-            }
-            
-            // For date comparison, we consider the full date with time
-            if (selectedFromDate && selectedToDate) {
-                // Both from and to dates selected
-                return imageDate >= selectedFromDate && imageDate <= selectedToDate;
-            } else if (selectedFromDate) {
-                // Only from date selected
-                return imageDate >= selectedFromDate;
-            } else if (selectedToDate) {
-                // Only to date selected
-                return imageDate <= selectedToDate;
-            }
-            
-            return true;
         }
 
         // Load images from Google Sheets CSV
@@ -1419,51 +1058,49 @@
                     // Check if Status column exists and has a value
                     const hasStatus = image.Status && image.Status.trim() !== '';
                     
-                    // Apply date filter
-                    const isInDateRange = isImageInDateRange(image);
+                    // Check if user_name matches the current logged-in user
+                    const assignedUserName = image.user_name || '';
+                    const isAssignedToCurrentUser = assignedUserName.trim() === currentUser;
                     
-                    if (!hasStatus && isInDateRange) {
-                        // This image needs processing (no status filled) AND is within date range
+                    if (!hasStatus && isAssignedToCurrentUser) {
+                        // This image needs processing (no status filled) AND is assigned to current user
                         pendingImages.push({
                             ...image,
                             processed: false,
                             submitted: false,
-                            hasStatus: false
+                            hasStatus: false,
+                            isAssignedToCurrentUser: true
                         });
                     }
                     
-                    // Add to all images for tracking (including those outside date range for completeness)
+                    // Add to all images for tracking
                     allImages.push({
                         ...image,
                         processed: hasStatus, // If it has a status, mark as processed
                         submitted: hasStatus, // If it has a status, mark as submitted
-                        hasStatus: hasStatus
+                        hasStatus: hasStatus,
+                        isAssignedToCurrentUser: isAssignedToCurrentUser
                     });
                 }
                 
-                console.log(`Total images: ${allImages.length}, Pending images (no status + date range): ${pendingImages.length}`);
+                console.log(`Total images: ${allImages.length}, Pending images (assigned to ${currentUser}): ${pendingImages.length}`);
                 
                 if (pendingImages.length === 0) {
                     // No images require processing
                     document.getElementById('loadingState').style.display = 'none';
                     document.getElementById('categorizationContent').style.display = 'none';
                     
-                    let noImagesMessage = "All images in the source sheet have already been processed or have a status assigned.";
+                    let noImagesMessage = "All images assigned to you have already been processed.";
                     
-                    // Update message based on date filter
-                    if (selectedFromDate || selectedToDate) {
-                        noImagesMessage = "No images require processing for the selected date range.";
-                        
-                        // Check if there are any images in the date range at all
-                        const totalInDateRange = allImages.filter(img => isImageInDateRange(img)).length;
-                        if (totalInDateRange === 0) {
-                            noImagesMessage = "No images found in the selected date range.";
-                        } else {
-                            // Check how many have status vs don't have status
-                            const withStatus = allImages.filter(img => isImageInDateRange(img) && img.hasStatus).length;
-                            const withoutStatus = allImages.filter(img => isImageInDateRange(img) && !img.hasStatus).length;
-                            noImagesMessage = `Found ${totalInDateRange} images in date range: ${withStatus} already processed, ${withoutStatus} need processing.`;
-                        }
+                    // Check if there are any images assigned to this user at all
+                    const totalAssigned = allImages.filter(img => img.isAssignedToCurrentUser).length;
+                    const withStatus = allImages.filter(img => img.isAssignedToCurrentUser && img.hasStatus).length;
+                    const withoutStatus = allImages.filter(img => img.isAssignedToCurrentUser && !img.hasStatus).length;
+                    
+                    if (totalAssigned === 0) {
+                        noImagesMessage = "No images are currently assigned to you. Please contact your supervisor.";
+                    } else {
+                        noImagesMessage = `You have ${totalAssigned} assigned images: ${withStatus} already processed, ${withoutStatus} need processing.`;
                     }
                     
                     document.getElementById('noImagesMessage').textContent = noImagesMessage;
@@ -1704,9 +1341,6 @@
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
             console.log('Professional Image Categorization System loaded');
-            
-            // Load available dates when page loads
-            loadAvailableDates();
         });
     </script>
 </body>
