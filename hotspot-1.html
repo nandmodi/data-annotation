@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SKU Selection Portal</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Card Styling to prevent overlapping */
+        .sku-card {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            overflow: hidden;
+            height: 240px; 
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .sku-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            transition: all 0.2s ease;
+        }
+
+        .image-wrapper {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px;
+            background: white;
+            min-height: 0;
+        }
+
+        .sku-image {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .checkbox-overlay {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 26px;
+            height: 26px;
+            cursor: pointer;
+            accent-color: #2563eb;
+            z-index: 40;
+            border: 2px solid white;
+            border-radius: 6px;
+        }
+
+        /* Custom Scrollbar */
+        .custom-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: #f8fafc;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+
+        /* Grid Viewport - Calculated to show 2 rows (6 images) clearly */
+        .grid-viewport {
+            height: 100%;
+            overflow-y: auto;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            padding: 20px;
+            align-content: start;
+        }
+
+        /* Responsive grid */
+        @media (max-width: 1280px) {
+            .grid-viewport {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .sku-card { height: 220px; }
+        }
+
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="bg-slate-100 h-screen font-sans overflow-hidden">
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="fixed inset-0 bg-white z-[60] flex flex-col items-center justify-center">
+        <div class="loader mb-4"></div>
+        <p class="text-slate-600 font-bold text-lg">Loading Products...</p>
+    </div>
+
+    <!-- Hidden Submission Form -->
+    <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
+    <form id="google-form-proxy" action="https://docs.google.com/forms/d/e/1FAIpQLSeraoBf6s2nHnlflVGtzMWpHv2j1wpF4p3FfgQ-t_8yneOdjg/formResponse" method="POST" target="hidden_iframe" style="display:none;">
+        <input type="hidden" name="entry.106248745" id="f_name">
+        <input type="hidden" name="entry.675861556" id="f_sku">
+        <input type="hidden" name="entry.1292743855" id="f_model">
+        <input type="hidden" name="entry.341097138" id="f_cat">
+        <input type="hidden" name="entry.94706720" id="f_file">
+    </form>
+
+    <!-- Login Page -->
+    <div id="login-page" class="min-h-screen flex items-center justify-center p-4">
+        <div class="bg-white p-12 rounded-3xl shadow-2xl w-full max-w-md border border-slate-100">
+            <div class="text-center mb-10">
+                <div class="inline-flex items-center justify-center w-20 h-20 bg-blue-600 rounded-3xl text-white mb-6 shadow-xl">
+                    <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                </div>
+                <h1 class="text-4xl font-black text-slate-900 mb-2 tracking-tight">Login</h1>
+                <p class="text-slate-500 font-medium">Operator Authentication</p>
+            </div>
+            
+            <div class="space-y-8">
+                <div>
+                    <label class="block text-xs font-black text-slate-400 mb-3 uppercase tracking-widest">Select Your Name</label>
+                    <select id="user-name" class="w-full p-5 border-2 border-slate-100 rounded-2xl focus:border-blue-500 outline-none bg-slate-50 font-bold transition-all cursor-pointer text-lg appearance-none">
+                        <option value="Rajmani">Rajmani</option>
+                        <option value="Mohit">Mohit</option>
+                    </select>
+                </div>
+
+                <button onclick="handleLogin()" class="w-full bg-blue-600 text-white font-black py-5 rounded-2xl hover:bg-blue-700 transition-all shadow-xl active:scale-[0.98] uppercase tracking-widest text-lg">
+                    Enter Dashboard
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Dashboard -->
+    <div id="main-page" class="hidden h-screen flex flex-col bg-white">
+        <header class="bg-white border-b border-slate-200 px-6 py-3 flex justify-between items-center shrink-0 z-40">
+            <div class="flex items-center gap-10">
+                <div>
+                    <h2 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5" id="header-user">---</h2>
+                    <p class="text-xl font-black text-blue-600" id="header-sku-display">SKU: ---</p>
+                </div>
+                
+                <div class="flex items-center bg-slate-100 rounded-2xl p-1 shadow-inner border border-slate-200">
+                    <button onclick="prevSku()" class="p-2.5 hover:bg-white hover:shadow-md rounded-xl transition-all text-slate-600 disabled:opacity-20" id="prev-btn">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"></path></svg>
+                    </button>
+                    <span class="px-6 text-sm font-black text-slate-600 min-w-[120px] text-center" id="sku-counter">0 / 0</span>
+                    <button onclick="nextSku()" class="p-2.5 hover:bg-white hover:shadow-md rounded-xl transition-all text-slate-600 disabled:opacity-20" id="next-btn">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path></svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-6">
+                <span id="selection-count" class="text-sm font-black bg-blue-50 text-blue-700 px-5 py-2.5 rounded-2xl border-2 border-blue-100">0 Selected</span>
+                <button onclick="submitToForm()" id="submit-btn" class="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-3 rounded-2xl font-black transition-all shadow-lg active:scale-95 uppercase tracking-tight">
+                    Submit Selections
+                </button>
+            </div>
+        </header>
+
+        <main class="flex-1 flex min-h-0 overflow-hidden">
+            <!-- Left Side: NEW -->
+            <section class="w-1/2 flex flex-col border-r border-slate-200 min-h-0">
+                <div class="bg-blue-600 px-6 py-3 flex justify-between items-center shadow-lg z-10 shrink-0">
+                    <h3 class="font-black text-white text-xs tracking-widest uppercase">NEW MODELS (LEFT)</h3>
+                    <span id="new-count-badge" class="text-[10px] font-black bg-blue-800 text-blue-100 px-3 py-1 rounded-full uppercase">0 Items</span>
+                </div>
+                <div id="new-grid" class="flex-1 custom-scroll grid-viewport">
+                    <!-- Cards injected here -->
+                </div>
+            </section>
+
+            <!-- Right Side: PROD -->
+            <section class="w-1/2 flex flex-col bg-slate-50 min-h-0">
+                <div class="bg-slate-800 px-6 py-3 flex justify-between items-center shadow-lg z-10 shrink-0">
+                    <h3 class="font-black text-white text-xs tracking-widest uppercase">PROD MODELS (RIGHT)</h3>
+                    <span id="prod-count-badge" class="text-[10px] font-black bg-slate-950 text-slate-400 px-3 py-1 rounded-full uppercase">0 Items</span>
+                </div>
+                <div id="prod-grid" class="flex-1 custom-scroll grid-viewport">
+                    <!-- Cards injected here -->
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Done Modal -->
+    <div id="done-modal" class="hidden fixed inset-0 bg-slate-900/90 flex items-center justify-center z-[100] backdrop-blur-sm">
+        <div class="bg-white p-12 rounded-[2rem] text-center shadow-2xl max-w-sm mx-4 border border-slate-200">
+            <div class="bg-emerald-100 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-8 text-emerald-600">
+                <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+            </div>
+            <h3 class="text-3xl font-black text-slate-900 mb-3 uppercase tracking-tight tracking-tight">Submitted</h3>
+            <p class="text-slate-600 font-bold mb-10 leading-relaxed" id="modal-message">Data logged to sheet.</p>
+            <button onclick="closeModalAndAdvance()" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black hover:bg-blue-700 transition-all shadow-xl active:scale-95 uppercase tracking-widest">
+                Continue to Next
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRRGCcDlcoYzbElD-e7ZOuwqQm-vfTOUff10tO9jgb4kZXng7CaWTev0-k2srzI4NBvsFhk2FytkHpb/pub?gid=0&single=true&output=csv';
+
+        let fullDataset = [];
+        let uniqueSkus = [];
+        let currentSkuIndex = 0;
+        let currentUser = "";
+        let selections = {}; 
+
+        let scrollLock = false;
+
+        window.addEventListener('DOMContentLoaded', () => {
+            fetchCSV();
+            setupSyncScroll();
+        });
+
+        async function fetchCSV() {
+            Papa.parse(CSV_URL, {
+                download: true,
+                header: true,
+                complete: (results) => {
+                    // Filter out rows that have a value in the "Status" column
+                    fullDataset = results.data.filter(row => row.Sku_id && !row.Status);
+                    document.getElementById('loading-overlay').style.display = 'none';
+                },
+                error: () => alert("CSV Load Failed.")
+            });
+        }
+
+        function setupSyncScroll() {
+            const leftGrid = document.getElementById('new-grid');
+            const rightGrid = document.getElementById('prod-grid');
+
+            const sync = (source, target) => {
+                if (scrollLock) return;
+                scrollLock = true;
+                target.scrollTop = source.scrollTop;
+                requestAnimationFrame(() => {
+                    scrollLock = false;
+                });
+            };
+
+            leftGrid.addEventListener('scroll', () => sync(leftGrid, rightGrid));
+            rightGrid.addEventListener('scroll', () => sync(rightGrid, leftGrid));
+        }
+
+        function handleLogin() {
+            currentUser = document.getElementById('user-name').value;
+
+            // Generate unique SKUs from the entire available dataset (Category filter removed)
+            uniqueSkus = [...new Set(fullDataset.map(item => item.Sku_id))];
+
+            if (uniqueSkus.length === 0) return alert("No available SKUs found in the source sheet.");
+
+            currentSkuIndex = 0;
+            document.getElementById('header-user').innerText = `OPERATOR: ${currentUser}`;
+            document.getElementById('login-page').classList.add('hidden');
+            document.getElementById('main-page').classList.remove('hidden');
+            renderCurrentSku();
+        }
+
+        function renderCurrentSku() {
+            const skuId = uniqueSkus[currentSkuIndex];
+            document.getElementById('header-sku-display').innerText = `SKU: ${skuId}`;
+            document.getElementById('sku-counter').innerText = `${currentSkuIndex + 1} / ${uniqueSkus.length}`;
+            
+            document.getElementById('prev-btn').disabled = currentSkuIndex === 0;
+            document.getElementById('next-btn').disabled = currentSkuIndex === uniqueSkus.length - 1;
+
+            const skuData = fullDataset.filter(i => i.Sku_id === skuId);
+            const newData = skuData.filter(i => i.Model.toLowerCase().includes('new'));
+            const prodData = skuData.filter(i => i.Model.toLowerCase().includes('prod'));
+
+            document.getElementById('new-count-badge').innerText = `${newData.length} Items`;
+            document.getElementById('prod-count-badge').innerText = `${prodData.length} Items`;
+
+            document.getElementById('new-grid').innerHTML = newData.map(item => createCard(item)).join('');
+            document.getElementById('prod-grid').innerHTML = prodData.map(item => createCard(item)).join('');
+
+            document.querySelectorAll('.sku-check').forEach(box => {
+                if (selections[box.dataset.uniqueid]) box.checked = true;
+                box.addEventListener('change', toggleSelection);
+            });
+            updateGlobalCount();
+        }
+
+        function createCard(item) {
+            const uniqueId = `${item.Sku_id}_${item.Model}_${item['File name']}`;
+            return `
+                <div class="sku-card group">
+                    <div class="image-wrapper">
+                        <img src="${item.url}" 
+                             onerror="this.src='https://via.placeholder.com/300?text=No+Image'" 
+                             class="sku-image group-hover:scale-110 transition-transform duration-300"
+                             alt="SKU"
+                             loading="lazy">
+                    </div>
+                    <div class="p-3 bg-slate-50 border-t border-slate-100 shrink-0">
+                        <p class="text-[9px] font-black text-slate-800 truncate uppercase" title="${item['File name']}">${item['File name']}</p>
+                        <p class="text-[8px] text-blue-600 font-black mt-1 uppercase tracking-tighter">${item.Model}</p>
+                    </div>
+                    <input type="checkbox" class="checkbox-overlay sku-check" 
+                           data-uniqueid="${uniqueId}"
+                           data-sku="${item.Sku_id}" 
+                           data-model="${item.Model}"
+                           data-cat="${item.Category}"
+                           data-file="${item['File name']}">
+                </div>
+            `;
+        }
+
+        function toggleSelection(e) {
+            const id = e.target.dataset.uniqueid;
+            if (e.target.checked) selections[id] = e.target.dataset;
+            else delete selections[id];
+            updateGlobalCount();
+        }
+
+        function updateGlobalCount() {
+            const count = Object.keys(selections).length;
+            document.getElementById('selection-count').innerText = `${count} Selected`;
+        }
+
+        function nextSku() {
+            if (currentSkuIndex < uniqueSkus.length - 1) {
+                currentSkuIndex++;
+                renderCurrentSku();
+                document.getElementById('new-grid').scrollTop = 0;
+                document.getElementById('prod-grid').scrollTop = 0;
+            }
+        }
+
+        function prevSku() {
+            if (currentSkuIndex > 0) {
+                currentSkuIndex--;
+                renderCurrentSku();
+                document.getElementById('new-grid').scrollTop = 0;
+                document.getElementById('prod-grid').scrollTop = 0;
+            }
+        }
+
+        async function submitToForm() {
+            const selectedItems = Object.values(selections);
+            if (selectedItems.length === 0) return alert("Select at least one image.");
+
+            const btn = document.getElementById('submit-btn');
+            btn.disabled = true;
+            btn.innerText = "Processing...";
+
+            const form = document.getElementById('google-form-proxy');
+            
+            for (let i = 0; i < selectedItems.length; i++) {
+                const item = selectedItems[i];
+                
+                document.getElementById('f_name').value = currentUser;
+                document.getElementById('f_sku').value = item.sku;
+                document.getElementById('f_model').value = item.model;
+                document.getElementById('f_cat').value = item.cat; // Take original category from sheet
+                document.getElementById('f_file').value = item.file;
+
+                form.submit();
+                
+                if (i < selectedItems.length - 1) {
+                    await new Promise(resolve => setTimeout(resolve, 800)); 
+                }
+            }
+
+            document.getElementById('modal-message').innerText = `${selectedItems.length} selections logged successfully.`;
+            document.getElementById('done-modal').classList.remove('hidden');
+        }
+
+        function closeModalAndAdvance() {
+            document.getElementById('done-modal').classList.add('hidden');
+            selections = {};
+            updateGlobalCount();
+            
+            const btn = document.getElementById('submit-btn');
+            btn.disabled = false;
+            btn.innerText = "Submit Selections";
+
+            if (currentSkuIndex < uniqueSkus.length - 1) {
+                nextSku();
+            } else {
+                renderCurrentSku(); 
+                alert("All available SKUs have been viewed.");
+            }
+        }
+    </script>
+</body>
+</html>
