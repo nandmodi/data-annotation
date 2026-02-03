@@ -7,7 +7,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Card Styling to prevent overlapping */
+        /* Card Styling */
         .sku-card {
             position: relative;
             display: flex;
@@ -18,12 +18,12 @@
             overflow: hidden;
             height: 240px; 
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: all 0.2s ease;
         }
 
         .sku-card:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            transition: all 0.2s ease;
         }
 
         .image-wrapper {
@@ -67,7 +67,7 @@
             border-radius: 10px;
         }
 
-        /* Grid Viewport - Calculated to show 2 rows (6 images) clearly */
+        /* Grid Layout */
         .grid-viewport {
             height: 100%;
             overflow-y: auto;
@@ -78,7 +78,6 @@
             align-content: start;
         }
 
-        /* Responsive grid */
         @media (max-width: 1280px) {
             .grid-viewport {
                 grid-template-columns: repeat(2, 1fr);
@@ -105,14 +104,15 @@
         <p class="text-slate-600 font-bold text-lg">Loading Products...</p>
     </div>
 
-    <!-- Hidden Submission Form -->
+    <!-- Hidden Submission Form (Updated with your Form Action and Entry IDs) -->
     <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
-    <form id="google-form-proxy" action="https://docs.google.com/forms/d/e/1FAIpQLSeraoBf6s2nHnlflVGtzMWpHv2j1wpF4p3FfgQ-t_8yneOdjg/formResponse" method="POST" target="hidden_iframe" style="display:none;">
-        <input type="hidden" name="entry.106248745" id="f_name">
-        <input type="hidden" name="entry.675861556" id="f_sku">
-        <input type="hidden" name="entry.1292743855" id="f_model">
-        <input type="hidden" name="entry.341097138" id="f_cat">
-        <input type="hidden" name="entry.94706720" id="f_file">
+    <form id="google-form-proxy" action="https://docs.google.com/forms/d/e/1FAIpQLSeYrk9_ChAMR9tErEKRLqdvhotVq3G4XoovdtukMG3RSIl1Cg/formResponse" method="POST" target="hidden_iframe" style="display:none;">
+        <input type="hidden" name="entry.1280960726" id="f_name">
+        <input type="hidden" name="entry.724649809" id="f_sku">
+        <input type="hidden" name="entry.1571069613" id="f_model">
+        <input type="hidden" name="entry.1038600598" id="f_cat">
+        <input type="hidden" name="entry.1701703706" id="f_file">
+        <input type="hidden" name="entry.1361985130" id="f_dd" value="Selected">
     </form>
 
     <!-- Login Page -->
@@ -177,9 +177,7 @@
                     <h3 class="font-black text-white text-xs tracking-widest uppercase">NEW MODELS (LEFT)</h3>
                     <span id="new-count-badge" class="text-[10px] font-black bg-blue-800 text-blue-100 px-3 py-1 rounded-full uppercase">0 Items</span>
                 </div>
-                <div id="new-grid" class="flex-1 custom-scroll grid-viewport">
-                    <!-- Cards injected here -->
-                </div>
+                <div id="new-grid" class="flex-1 custom-scroll grid-viewport"></div>
             </section>
 
             <!-- Right Side: PROD -->
@@ -188,9 +186,7 @@
                     <h3 class="font-black text-white text-xs tracking-widest uppercase">PROD MODELS (RIGHT)</h3>
                     <span id="prod-count-badge" class="text-[10px] font-black bg-slate-950 text-slate-400 px-3 py-1 rounded-full uppercase">0 Items</span>
                 </div>
-                <div id="prod-grid" class="flex-1 custom-scroll grid-viewport">
-                    <!-- Cards injected here -->
-                </div>
+                <div id="prod-grid" class="flex-1 custom-scroll grid-viewport"></div>
             </section>
         </main>
     </div>
@@ -201,7 +197,7 @@
             <div class="bg-emerald-100 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-8 text-emerald-600">
                 <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
             </div>
-            <h3 class="text-3xl font-black text-slate-900 mb-3 uppercase tracking-tight tracking-tight">Submitted</h3>
+            <h3 class="text-3xl font-black text-slate-900 mb-3 uppercase tracking-tight">Submitted</h3>
             <p class="text-slate-600 font-bold mb-10 leading-relaxed" id="modal-message">Data logged to sheet.</p>
             <button onclick="closeModalAndAdvance()" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black hover:bg-blue-700 transition-all shadow-xl active:scale-95 uppercase tracking-widest">
                 Continue to Next
@@ -210,14 +206,14 @@
     </div>
 
     <script>
-        const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRRGCcDlcoYzbElD-e7ZOuwqQm-vfTOUff10tO9jgb4kZXng7CaWTev0-k2srzI4NBvsFhk2FytkHpb/pub?gid=1441433739&single=true&output=csv';
+        // Updated CSV Source
+        const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR3STnem52PFJkdO9kctoJUCcFpPz3z0osg3ankCpWqgVa3P0oqiQU8PidjobkFopOJ6rKDAYG9JlfS/pub?gid=460781640&single=true&output=csv';
 
         let fullDataset = [];
         let uniqueSkus = [];
         let currentSkuIndex = 0;
         let currentUser = "";
         let selections = {}; 
-
         let scrollLock = false;
 
         window.addEventListener('DOMContentLoaded', () => {
@@ -230,7 +226,7 @@
                 download: true,
                 header: true,
                 complete: (results) => {
-                    // Filter out rows that have a value in the "Status" column
+                    // Filter out empty rows or already processed ones if Status exists
                     fullDataset = results.data.filter(row => row.Sku_id && !row.Status);
                     document.getElementById('loading-overlay').style.display = 'none';
                 },
@@ -257,8 +253,6 @@
 
         function handleLogin() {
             currentUser = document.getElementById('user-name').value;
-
-            // Generate unique SKUs from the entire available dataset (Category filter removed)
             uniqueSkus = [...new Set(fullDataset.map(item => item.Sku_id))];
 
             if (uniqueSkus.length === 0) return alert("No available SKUs found in the source sheet.");
@@ -288,6 +282,7 @@
             document.getElementById('new-grid').innerHTML = newData.map(item => createCard(item)).join('');
             document.getElementById('prod-grid').innerHTML = prodData.map(item => createCard(item)).join('');
 
+            // Restore selection states
             document.querySelectorAll('.sku-check').forEach(box => {
                 if (selections[box.dataset.uniqueid]) box.checked = true;
                 box.addEventListener('change', toggleSelection);
@@ -314,7 +309,7 @@
                            data-uniqueid="${uniqueId}"
                            data-sku="${item.Sku_id}" 
                            data-model="${item.Model}"
-                           data-cat="${item.Category}"
+                           data-cat="${item.Category || ''}"
                            data-file="${item['File name']}">
                 </div>
             `;
@@ -352,7 +347,7 @@
 
         async function submitToForm() {
             const selectedItems = Object.values(selections);
-            if (selectedItems.length === 0) return alert("Select at least one image.");
+            if (selectedItems.length === 0) return alert("Please select at least one image.");
 
             const btn = document.getElementById('submit-btn');
             btn.disabled = true;
@@ -363,14 +358,16 @@
             for (let i = 0; i < selectedItems.length; i++) {
                 const item = selectedItems[i];
                 
+                // Mapping inputs based on your pre-fill URL
                 document.getElementById('f_name').value = currentUser;
                 document.getElementById('f_sku').value = item.sku;
                 document.getElementById('f_model').value = item.model;
-                document.getElementById('f_cat').value = item.cat; // Take original category from sheet
+                document.getElementById('f_cat').value = item.cat;
                 document.getElementById('f_file').value = item.file;
 
                 form.submit();
                 
+                // Delay to prevent iframe collision
                 if (i < selectedItems.length - 1) {
                     await new Promise(resolve => setTimeout(resolve, 800)); 
                 }
