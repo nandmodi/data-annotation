@@ -67,7 +67,7 @@
             border-radius: 10px;
         }
 
-        /* Grid Viewport - Calculated to show 2 rows (6 images) clearly */
+        /* Grid Viewport */
         .grid-viewport {
             height: 100%;
             overflow-y: auto;
@@ -107,12 +107,13 @@
 
     <!-- Hidden Submission Form -->
     <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
-    <form id="google-form-proxy" action="https://docs.google.com/forms/d/e/1FAIpQLSeraoBf6s2nHnlflVGtzMWpHv2j1wpF4p3FfgQ-t_8yneOdjg/formResponse" method="POST" target="hidden_iframe" style="display:none;">
-        <input type="hidden" name="entry.106248745" id="f_name">
-        <input type="hidden" name="entry.675861556" id="f_sku">
-        <input type="hidden" name="entry.1292743855" id="f_model">
-        <input type="hidden" name="entry.341097138" id="f_cat">
-        <input type="hidden" name="entry.94706720" id="f_file">
+    <form id="google-form-proxy" action="https://docs.google.com/forms/d/e/1FAIpQLSeYrk9_ChAMR9tErEKRLqdvhotVq3G4XoovdtukMG3RSIl1Cg/formResponse" method="POST" target="hidden_iframe" style="display:none;">
+        <input type="hidden" name="entry.1280960726" id="f_name">
+        <input type="hidden" name="entry.724649809" id="f_sku">
+        <input type="hidden" name="entry.1571069613" id="f_model">
+        <input type="hidden" name="entry.1038600598" id="f_cat">
+        <input type="hidden" name="entry.1701703706" id="f_file">
+        <input type="hidden" name="entry.1361985130" id="f_dd">
     </form>
 
     <!-- Login Page -->
@@ -201,7 +202,7 @@
             <div class="bg-emerald-100 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-8 text-emerald-600">
                 <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
             </div>
-            <h3 class="text-3xl font-black text-slate-900 mb-3 uppercase tracking-tight tracking-tight">Submitted</h3>
+            <h3 class="text-3xl font-black text-slate-900 mb-3 uppercase tracking-tight">Submitted</h3>
             <p class="text-slate-600 font-bold mb-10 leading-relaxed" id="modal-message">Data logged to sheet.</p>
             <button onclick="closeModalAndAdvance()" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black hover:bg-blue-700 transition-all shadow-xl active:scale-95 uppercase tracking-widest">
                 Continue to Next
@@ -210,7 +211,8 @@
     </div>
 
     <script>
-        const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRRGCcDlcoYzbElD-e7ZOuwqQm-vfTOUff10tO9jgb4kZXng7CaWTev0-k2srzI4NBvsFhk2FytkHpb/pub?gid=0&single=true&output=csv';
+        // Updated CSV Source URL
+        const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR3STnem52PFJkdO9kctoJUCcFpPz3z0osg3ankCpWqgVa3P0oqiQU8PidjobkFopOJ6rKDAYG9JlfS/pub?gid=0&single=true&output=csv';
 
         let fullDataset = [];
         let uniqueSkus = [];
@@ -258,7 +260,7 @@
         function handleLogin() {
             currentUser = document.getElementById('user-name').value;
 
-            // Generate unique SKUs from the entire available dataset (Category filter removed)
+            // Generate unique SKUs from the entire available dataset
             uniqueSkus = [...new Set(fullDataset.map(item => item.Sku_id))];
 
             if (uniqueSkus.length === 0) return alert("No available SKUs found in the source sheet.");
@@ -363,14 +365,17 @@
             for (let i = 0; i < selectedItems.length; i++) {
                 const item = selectedItems[i];
                 
+                // Map fields to Google Form Entry IDs
                 document.getElementById('f_name').value = currentUser;
                 document.getElementById('f_sku').value = item.sku;
                 document.getElementById('f_model').value = item.model;
-                document.getElementById('f_cat').value = item.cat; // Take original category from sheet
+                document.getElementById('f_cat').value = item.cat;
                 document.getElementById('f_file').value = item.file;
+                document.getElementById('f_dd').value = "Selected"; // Default value for dropdown/status field
 
                 form.submit();
                 
+                // Staggered delay to ensure all form responses are recorded by Google
                 if (i < selectedItems.length - 1) {
                     await new Promise(resolve => setTimeout(resolve, 800)); 
                 }
