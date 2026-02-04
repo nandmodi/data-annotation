@@ -207,7 +207,6 @@
     </div>
 
     <script>
-        // Updated URL for published CSV
         const PUB_CSV_URL = `https://docs.google.com/spreadsheets/d/e/2PACX-1vR3STnem52PFJkdO9kctoJUCcFpPz3z0osg3ankCpWqgVa3P0oqiQU8PidjobkFopOJ6rKDAYG9JlfS/pub?gid=460781640&single=true&output=csv`;
         
         let fullDataset = [];
@@ -223,7 +222,6 @@
         });
 
         async function fetchCSV() {
-            // Priority 1: PapaParse direct download (works if published properly)
             try {
                 Papa.parse(PUB_CSV_URL, {
                     download: true,
@@ -242,7 +240,6 @@
 
         async function tryFetchWithProxy() {
             try {
-                // Using a different proxy approach for better reliability
                 const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(PUB_CSV_URL)}`;
                 const response = await fetch(proxyUrl);
                 if (!response.ok) throw new Error();
@@ -297,8 +294,19 @@
 
         function handleLogin() {
             currentUser = document.getElementById('user-name').value;
-            uniqueSkus = [...new Set(fullDataset.map(item => item.Sku_id))];
-            if (uniqueSkus.length === 0) return alert("No available SKUs found.");
+            
+            // Logic to exclude SKUs that have any value in the "Status" column
+            uniqueSkus = [...new Set(
+                fullDataset
+                    .filter(item => !item.Status || item.Status.trim() === "")
+                    .map(item => item.Sku_id)
+            )];
+
+            if (uniqueSkus.length === 0) {
+                alert("No pending SKUs found (all items are marked with a status or no data matches).");
+                return;
+            }
+
             currentSkuIndex = 0;
             document.getElementById('header-user').innerText = `OPERATOR: ${currentUser}`;
             document.getElementById('login-page').classList.add('hidden');
