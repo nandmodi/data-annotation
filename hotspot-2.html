@@ -102,9 +102,10 @@
     <div id="loading-overlay" class="fixed inset-0 bg-white z-[60] flex flex-col items-center justify-center">
         <div class="loader mb-4"></div>
         <p class="text-slate-600 font-bold text-lg">Loading Products...</p>
+        <p id="error-text" class="text-red-500 mt-4 hidden text-sm max-w-xs text-center"></p>
     </div>
 
-    <!-- Hidden Submission Form (Updated with your Form Action and Entry IDs) -->
+    <!-- Hidden Submission Form -->
     <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
     <form id="google-form-proxy" action="https://docs.google.com/forms/d/e/1FAIpQLSeYrk9_ChAMR9tErEKRLqdvhotVq3G4XoovdtukMG3RSIl1Cg/formResponse" method="POST" target="hidden_iframe" style="display:none;">
         <input type="hidden" name="entry.1280960726" id="f_name">
@@ -135,8 +136,8 @@
                     </select>
                 </div>
 
-                <button onclick="handleLogin()" class="w-full bg-blue-600 text-white font-black py-5 rounded-2xl hover:bg-blue-700 transition-all shadow-xl active:scale-[0.98] uppercase tracking-widest text-lg">
-                    Enter Dashboard
+                <button id="enter-btn" onclick="handleLogin()" disabled class="w-full bg-slate-400 text-white font-black py-5 rounded-2xl transition-all shadow-xl uppercase tracking-widest text-lg cursor-not-allowed">
+                    Connecting to Sheet...
                 </button>
             </div>
         </div>
@@ -206,9 +207,9 @@
     </div>
 
     <script>
-        // Updated CSV Source
-        const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR3STnem52PFJkdO9kctoJUCcFpPz3z0osg3ankCpWqgVa3P0oqiQU8PidjobkFopOJ6rKDAYG9JlfS/pub?gid=460781640&single=true&output=csv';
-
+        // Updated URL for published CSV
+        const PUB_CSV_URL = `https://docs.google.com/spreadsheets/d/e/2PACX-1vR3STnem52PFJkdO9kctoJUCcFpPz3z0osg3ankCpWqgVa3P0oqiQU8PidjobkFopOJ6rKDAYG9JlfS/pub?gid=460781640&single=true&output=csv`;
+        
         let fullDataset = [];
         let uniqueSkus = [];
         let currentSkuIndex = 0;
@@ -222,31 +223,74 @@
         });
 
         async function fetchCSV() {
-            Papa.parse(CSV_URL, {
-                download: true,
-                header: true,
-                complete: (results) => {
-                    // Filter out empty rows or already processed ones if Status exists
-                    fullDataset = results.data.filter(row => row.Sku_id && !row.Status);
-                    document.getElementById('loading-overlay').style.display = 'none';
-                },
-                error: () => alert("CSV Load Failed.")
-            });
+            // Priority 1: PapaParse direct download (works if published properly)
+            try {
+                Papa.parse(PUB_CSV_URL, {
+                    download: true,
+                    header: true,
+                    skipEmptyLines: true,
+                    complete: (results) => handleParsedResults(results),
+                    error: (err) => {
+                        console.warn("Direct PapaParse failed, trying fetch proxy...");
+                        tryFetchWithProxy();
+                    }
+                });
+            } catch (e) {
+                tryFetchWithProxy();
+            }
+        }
+
+        async function tryFetchWithProxy() {
+            try {
+                // Using a different proxy approach for better reliability
+                const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(PUB_CSV_URL)}`;
+                const response = await fetch(proxyUrl);
+                if (!response.ok) throw new Error();
+                const json = await response.json();
+                
+                Papa.parse(json.contents, {
+                    header: true,
+                    skipEmptyLines: true,
+                    complete: (results) => handleParsedResults(results),
+                    error: () => showError("Final attempt to load data failed.")
+                });
+            } catch (err) {
+                showError("Could not reach the spreadsheet. Please ensure it is Published to Web (CSV format).");
+            }
+        }
+
+        function handleParsedResults(results) {
+            fullDataset = results.data.filter(row => row.Sku_id);
+            if (fullDataset.length === 0) {
+                showError("Spreadsheet loaded, but no valid SKU data found.");
+                return;
+            }
+            document.getElementById('loading-overlay').style.display = 'none';
+            const enterBtn = document.getElementById('enter-btn');
+            enterBtn.disabled = false;
+            enterBtn.innerText = "Enter Dashboard";
+            enterBtn.className = "w-full bg-blue-600 text-white font-black py-5 rounded-2xl hover:bg-blue-700 transition-all shadow-xl active:scale-[0.98] uppercase tracking-widest text-lg";
+        }
+
+        function showError(msg) {
+            const errText = document.getElementById('error-text');
+            errText.innerText = msg;
+            errText.classList.remove('hidden');
+            const loader = document.querySelector('.loader');
+            if (loader) loader.style.display = 'none';
+            const loadingP = document.querySelector('#loading-overlay p');
+            if (loadingP) loadingP.innerText = "Connection Failed";
         }
 
         function setupSyncScroll() {
             const leftGrid = document.getElementById('new-grid');
             const rightGrid = document.getElementById('prod-grid');
-
             const sync = (source, target) => {
                 if (scrollLock) return;
                 scrollLock = true;
                 target.scrollTop = source.scrollTop;
-                requestAnimationFrame(() => {
-                    scrollLock = false;
-                });
+                requestAnimationFrame(() => scrollLock = false);
             };
-
             leftGrid.addEventListener('scroll', () => sync(leftGrid, rightGrid));
             rightGrid.addEventListener('scroll', () => sync(rightGrid, leftGrid));
         }
@@ -254,9 +298,7 @@
         function handleLogin() {
             currentUser = document.getElementById('user-name').value;
             uniqueSkus = [...new Set(fullDataset.map(item => item.Sku_id))];
-
-            if (uniqueSkus.length === 0) return alert("No available SKUs found in the source sheet.");
-
+            if (uniqueSkus.length === 0) return alert("No available SKUs found.");
             currentSkuIndex = 0;
             document.getElementById('header-user').innerText = `OPERATOR: ${currentUser}`;
             document.getElementById('login-page').classList.add('hidden');
@@ -273,8 +315,8 @@
             document.getElementById('next-btn').disabled = currentSkuIndex === uniqueSkus.length - 1;
 
             const skuData = fullDataset.filter(i => i.Sku_id === skuId);
-            const newData = skuData.filter(i => i.Model.toLowerCase().includes('new'));
-            const prodData = skuData.filter(i => i.Model.toLowerCase().includes('prod'));
+            const newData = skuData.filter(i => i.Model && i.Model.toLowerCase().includes('new'));
+            const prodData = skuData.filter(i => i.Model && i.Model.toLowerCase().includes('prod'));
 
             document.getElementById('new-count-badge').innerText = `${newData.length} Items`;
             document.getElementById('prod-count-badge').innerText = `${prodData.length} Items`;
@@ -282,7 +324,6 @@
             document.getElementById('new-grid').innerHTML = newData.map(item => createCard(item)).join('');
             document.getElementById('prod-grid').innerHTML = prodData.map(item => createCard(item)).join('');
 
-            // Restore selection states
             document.querySelectorAll('.sku-check').forEach(box => {
                 if (selections[box.dataset.uniqueid]) box.checked = true;
                 box.addEventListener('change', toggleSelection);
@@ -302,8 +343,8 @@
                              loading="lazy">
                     </div>
                     <div class="p-3 bg-slate-50 border-t border-slate-100 shrink-0">
-                        <p class="text-[9px] font-black text-slate-800 truncate uppercase" title="${item['File name']}">${item['File name']}</p>
-                        <p class="text-[8px] text-blue-600 font-black mt-1 uppercase tracking-tighter">${item.Model}</p>
+                        <p class="text-[9px] font-black text-slate-800 truncate uppercase" title="${item['File name']}">${item['File name'] || 'No Name'}</p>
+                        <p class="text-[8px] text-blue-600 font-black mt-1 uppercase tracking-tighter">${item.Model || ''}</p>
                     </div>
                     <input type="checkbox" class="checkbox-overlay sku-check" 
                            data-uniqueid="${uniqueId}"
@@ -357,23 +398,18 @@
             
             for (let i = 0; i < selectedItems.length; i++) {
                 const item = selectedItems[i];
-                
-                // Mapping inputs based on your pre-fill URL
                 document.getElementById('f_name').value = currentUser;
                 document.getElementById('f_sku').value = item.sku;
                 document.getElementById('f_model').value = item.model;
                 document.getElementById('f_cat').value = item.cat;
                 document.getElementById('f_file').value = item.file;
-
                 form.submit();
-                
-                // Delay to prevent iframe collision
                 if (i < selectedItems.length - 1) {
                     await new Promise(resolve => setTimeout(resolve, 800)); 
                 }
             }
 
-            document.getElementById('modal-message').innerText = `${selectedItems.length} selections logged successfully.`;
+            document.getElementById('modal-message').innerText = `${selectedItems.length} selections logged.`;
             document.getElementById('done-modal').classList.remove('hidden');
         }
 
@@ -381,17 +417,11 @@
             document.getElementById('done-modal').classList.add('hidden');
             selections = {};
             updateGlobalCount();
-            
             const btn = document.getElementById('submit-btn');
             btn.disabled = false;
             btn.innerText = "Submit Selections";
-
-            if (currentSkuIndex < uniqueSkus.length - 1) {
-                nextSku();
-            } else {
-                renderCurrentSku(); 
-                alert("All available SKUs have been viewed.");
-            }
+            if (currentSkuIndex < uniqueSkus.length - 1) nextSku();
+            else alert("All SKUs completed.");
         }
     </script>
 </body>
